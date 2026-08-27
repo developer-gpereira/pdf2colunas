@@ -14,7 +14,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- html2pdf.js (via CDN) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" xintegrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <style>
         ::-webkit-scrollbar { width: 8px; }
@@ -22,51 +22,38 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* O papel base, representando o tamanho físico A4 exato */
         .a4-paper {
+            width: 100%;
+            max-width: 210mm;
+            min-height: 297mm;
             background-color: white;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            /* Reduzido para 10mm para alinhar com as margens estreitas solicitadas */
+            padding: 10mm; 
             margin: 0 auto;
             color: #000;
-            position: relative; /* Para garantir o contexto do conteúdo interno */
-            overflow: hidden; /* Evita que o conteúdo passe do papel físico */
-            box-sizing: border-box;
         }
 
-        /* Orientação Retrato (Vertical) Exata: 210mm x 297mm */
+        /* Novas classes estruturais para controle de orientação */
         .retrato {
-            width: 210mm;
+            max-width: 210mm;
             min-height: 297mm;
-        }
-        
-        /* Orientação Paisagem (Horizontal) Exata: 297mm x 210mm */
-        .paisagem {
-            width: 297mm;
-            min-height: 210mm;
+            display: block; /* Fluxo normal: alinha no topo esquerdo */
         }
 
-        /* Container interno que segura o conteúdo e aplica as margens reais. 
-           Assim, o html2pdf tira print do papel inteiro, mas o texto não toca a borda. */
-        .conteudo-interno {
-            padding: 15mm; /* Margem de impressão segura */
-            width: 100%;
-            height: 100%;
+        .paisagem {
+            max-width: 297mm;
+            min-height: 210mm;
             display: flex;
             flex-direction: column;
-            box-sizing: border-box;
-        }
-
-        /* Se for paisagem, centraliza o conteúdo verticalmente dentro do container interno */
-        .paisagem .conteudo-interno {
-            justify-content: center;
+            justify-content: center; /* Centraliza o conteúdo verticalmente dentro do A4 */
         }
 
         .letras-colunas {
             column-count: 2;
-            column-gap: 40px; /* Mais espaço para garantir que as colunas não grudem */
+            column-gap: 30px; /* Reduzido levemente para otimizar espaço */
             text-align: left;
             line-height: 1.5;
-            width: 100%; /* Garante que ocupe todo o espaço disponível das colunas */
         }
 
         .estrofe {
@@ -127,6 +114,7 @@
                         </select>
                     </div>
 
+                    <!-- Nova Configuração: Orientação da Página -->
                     <div>
                         <label for="orientacao" class="block text-sm font-medium text-slate-700 mb-1">Orientação da Página</label>
                         <select id="orientacao" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
@@ -192,24 +180,19 @@
         </aside>
 
         <main class="w-full lg:w-2/3 bg-slate-100 p-4 lg:p-10 lg:overflow-y-auto flex justify-center">
-            
-            <!-- O Container Principal do A4 -->
+            <!-- Adicionada a classe inicial "retrato" ao container do PDF -->
             <div id="documento-pdf" class="a4-paper retrato transition-all duration-300">
-                
-                <!-- Novo Container Interno para gerenciar as margens reais -->
-                <div class="conteudo-interno">
-                    <div class="text-center mb-6 pb-4 border-b-2 border-slate-200 w-full">
-                        <h1 id="preview-titulo" class="uppercase tracking-wide text-slate-900 mb-2">TÍTULO DO HINO</h1>
-                        <h3 id="preview-autor" class="text-slate-600">Nome do Cantor / Autor</h3>
-                    </div>
+                <div class="text-center mb-6 pb-4 border-b-2 border-slate-200 w-full">
+                    <h1 id="preview-titulo" class="uppercase tracking-wide text-slate-900 mb-2">TÍTULO DO HINO</h1>
+                    <h3 id="preview-autor" class="text-slate-600">Nome do Cantor / Autor</h3>
+                </div>
 
-                    <div id="preview-letra" class="letras-colunas">
-                        <div class="text-slate-400 italic text-center h-full flex flex-col justify-center items-center opacity-70" style="column-span: all; margin-top: 50px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mb-4"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
-                            <p>A letra formatada em duas colunas aparecerá aqui.</p>
-                        </div>
+                <div id="preview-letra" class="letras-colunas">
+                    <div class="text-slate-400 italic text-center h-full flex flex-col justify-center items-center opacity-70" style="column-span: all; margin-top: 50px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mb-4"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                        <p>A letra formatada em duas colunas aparecerá aqui.</p>
                     </div>
-                </div> <!-- Fim do Container Interno -->
+                </div>
             </div>
         </main>
     </div>
@@ -217,6 +200,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             
+            // 1. Geração Dinâmica das opções de tamanho (8px a 48px)
+            // Evita a repetição de dezenas de tags <option> no HTML.
             const configuracoesTamanho = [
                 { id: 'tamanho-titulo', padrao: 28 },
                 { id: 'tamanho-autor', padrao: 16 },
@@ -229,11 +214,12 @@
                     const option = document.createElement('option');
                     option.value = i;
                     option.textContent = `${i}px`;
-                    if (i === config.padrao) option.selected = true; 
+                    if (i === config.padrao) option.selected = true; // Seleciona o valor padrão de cada item
                     selectElement.appendChild(option);
                 }
             });
 
+            // 2. Mapeamento de Elementos (Inputs)
             const formInputs = {
                 titulo: document.getElementById('titulo'),
                 autor: document.getElementById('autor'),
@@ -257,6 +243,7 @@
                 letraItalico: document.getElementById('italico-letra')
             };
 
+            // 3. Mapeamento de Elementos (Preview/DOM)
             const preview = {
                 titulo: document.getElementById('preview-titulo'),
                 autor: document.getElementById('preview-autor'),
@@ -266,7 +253,9 @@
 
             const btnBaixar = document.getElementById('btn-baixar');
 
+            // 4. Lógica de Atualização (Data Binding Manual)
             function atualizarVisao() {
+                // Preenchimento de Textos
                 preview.titulo.textContent = formInputs.titulo.value.trim() || 'TÍTULO DO HINO';
                 preview.autor.textContent = formInputs.autor.value.trim() || 'Nome do Cantor / Autor';
 
@@ -282,8 +271,10 @@
                     preview.letra.innerHTML = `<div class="text-slate-400 italic text-center opacity-70" style="column-span: all; margin-top: 50px;"><p>A letra formatada aparecerá aqui.</p></div>`;
                 }
 
+                // Aplicação de Estilos Diretos no DOM
                 preview.documento.style.fontFamily = styleInputs.fonteGlobal.value;
                 
+                // Lógica Dinâmica de Orientação (DOM)
                 if (styleInputs.orientacao.value === 'landscape') {
                     preview.documento.classList.remove('retrato');
                     preview.documento.classList.add('paisagem');
@@ -292,25 +283,30 @@
                     preview.documento.classList.add('retrato');
                 }
                 
+                // Aplicar: Título
                 preview.titulo.style.fontSize = `${styleInputs.tituloTamanho.value}px`;
                 preview.titulo.style.fontWeight = styleInputs.tituloNegrito.checked ? 'bold' : 'normal';
                 preview.titulo.style.fontStyle = styleInputs.tituloItalico.checked ? 'italic' : 'normal';
 
+                // Aplicar: Autor
                 preview.autor.style.fontSize = `${styleInputs.autorTamanho.value}px`;
                 preview.autor.style.fontWeight = styleInputs.autorNegrito.checked ? 'bold' : 'normal';
                 preview.autor.style.fontStyle = styleInputs.autorItalico.checked ? 'italic' : 'normal';
 
+                // Aplicar: Letra
                 preview.letra.style.fontSize = `${styleInputs.letraTamanho.value}px`;
                 preview.letra.style.fontWeight = styleInputs.letraNegrito.checked ? 'bold' : 'normal';
                 preview.letra.style.fontStyle = styleInputs.letraItalico.checked ? 'italic' : 'normal';
             }
 
+            // 5. Acoplagem dos Eventos (Listeners)
             const todosOsInputs = [...Object.values(formInputs), ...Object.values(styleInputs)];
             todosOsInputs.forEach(input => {
-                input.addEventListener('input', atualizarVisao); 
-                input.addEventListener('change', atualizarVisao); 
+                input.addEventListener('input', atualizarVisao); // Pega digitação e sliders
+                input.addEventListener('change', atualizarVisao); // Pega checkboxes e selects
             });
 
+            // 6. Configuração e Download do PDF
             btnBaixar.addEventListener('click', () => {
                 const elemento = preview.documento;
                 const nomeBase = formInputs.titulo.value.trim() || 'hino';
@@ -321,24 +317,13 @@
                 btnBaixar.disabled = true;
                 btnBaixar.classList.add('opacity-75', 'cursor-not-allowed');
 
-                // Configuração revisada e mais segura
                 const opcoesPDF = {
-                    margin:       0, // Margem ZERO no PDF, pois a margem já está no CSS (.conteudo-interno padding: 15mm)
+                    margin:       [5, 5, 5, 5], 
                     filename:     `${nomeArquivo}.pdf`,
                     image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { 
-                        scale: 2, 
-                        useCORS: true, 
-                        letterRendering: true,
-                        // windowWidth de Desktop garante que o layout não esprema no celular
-                        windowWidth: 1200 
-                    }, 
-                    // Configura o jsPDF para usar o tamanho do elemento e respeitar a orientação
-                    jsPDF: { 
-                        unit: 'mm', 
-                        format: styleInputs.orientacao.value === 'portrait' ? 'a4' : [297, 210], // Força formato paisagem exato se necessário
-                        orientation: styleInputs.orientacao.value 
-                    }
+                    html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
+                    // A chave 'orientation' agora recebe a escolha do usuário dinamicamente
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: styleInputs.orientacao.value }
                 };
 
                 html2pdf().set(opcoesPDF).from(elemento).save().then(() => {
@@ -354,6 +339,7 @@
                 });
             });
             
+            // Renderiza inicial com os valores padrão
             atualizarVisao();
         });
     </script>
