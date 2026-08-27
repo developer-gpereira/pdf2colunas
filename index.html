@@ -317,14 +317,29 @@
                 btnBaixar.disabled = true;
                 btnBaixar.classList.add('opacity-75', 'cursor-not-allowed');
 
-                const opcoesPDF = {
-                    margin:       [5, 5, 5, 5], 
-                    filename:     `${nomeArquivo}.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
-                    // A chave 'orientation' agora recebe a escolha do usuário dinamicamente
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: styleInputs.orientacao.value }
-                };
+               const opcoesPDF = {
+            // 1. ZERE A MARGEM AQUI: 
+            // Como o CSS (.a4-paper) já tem 'padding: 10mm', o texto já está recuado.
+            // O jsPDF vai tirar um "print" do seu HTML inteiro (já com margens) e colar no papel A4.
+            margin:       0, 
+            
+            filename:     `${nomeArquivo}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { 
+                scale: 2, 
+                useCORS: true, 
+                letterRendering: true,
+                // 2. ADICIONE ISSO: 
+                // Força o print a ser tirado como se fosse a tela de um PC.
+                // Isso impede que, ao usar num celular, o texto esprema, fique alto demais e corte do lado.
+                windowWidth: 1024 
+            }, 
+            // 3. ADICIONE ISSO:
+            // Impede estritamente a criação automática de páginas extras pela biblioteca.
+            pagebreak:    { mode: ['avoid-all'] }, 
+            
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: styleInputs.orientacao.value }
+        };
 
                 html2pdf().set(opcoesPDF).from(elemento).save().then(() => {
                     btnBaixar.innerHTML = conteudoOriginalBtn;
