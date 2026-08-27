@@ -34,6 +34,21 @@
             color: #000;
         }
 
+        /* Novas classes estruturais para controle de orientação */
+        .retrato {
+            max-width: 210mm;
+            min-height: 297mm;
+            display: block; /* Fluxo normal: alinha no topo esquerdo */
+        }
+
+        .paisagem {
+            max-width: 297mm;
+            min-height: 210mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Centraliza o conteúdo verticalmente dentro do A4 */
+        }
+
         .letras-colunas {
             column-count: 2;
             column-gap: 30px; /* Reduzido levemente para otimizar espaço */
@@ -99,6 +114,15 @@
                         </select>
                     </div>
 
+                    <!-- Nova Configuração: Orientação da Página -->
+                    <div>
+                        <label for="orientacao" class="block text-sm font-medium text-slate-700 mb-1">Orientação da Página</label>
+                        <select id="orientacao" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                            <option value="portrait">Retrato (Vertical - Padrão)</option>
+                            <option value="landscape">Paisagem (Horizontal - Centralizado)</option>
+                        </select>
+                    </div>
+
                     <!-- Configurações: Título -->
                     <div class="bg-slate-50 p-3 rounded-md border border-slate-200">
                         <h3 class="text-xs font-bold text-slate-600 mb-2">TÍTULO</h3>
@@ -156,8 +180,9 @@
         </aside>
 
         <main class="w-full lg:w-2/3 bg-slate-100 p-4 lg:p-10 lg:overflow-y-auto flex justify-center">
-            <div id="documento-pdf" class="a4-paper transition-all duration-300">
-                <div class="text-center mb-6 pb-4 border-b-2 border-slate-200">
+            <!-- Adicionada a classe inicial "retrato" ao container do PDF -->
+            <div id="documento-pdf" class="a4-paper retrato transition-all duration-300">
+                <div class="text-center mb-6 pb-4 border-b-2 border-slate-200 w-full">
                     <h1 id="preview-titulo" class="uppercase tracking-wide text-slate-900 mb-2">TÍTULO DO HINO</h1>
                     <h3 id="preview-autor" class="text-slate-600">Nome do Cantor / Autor</h3>
                 </div>
@@ -203,6 +228,7 @@
 
             const styleInputs = {
                 fonteGlobal: document.getElementById('estilo-fonte'),
+                orientacao: document.getElementById('orientacao'),
                 
                 tituloTamanho: document.getElementById('tamanho-titulo'),
                 tituloNegrito: document.getElementById('negrito-titulo'),
@@ -248,6 +274,15 @@
                 // Aplicação de Estilos Diretos no DOM
                 preview.documento.style.fontFamily = styleInputs.fonteGlobal.value;
                 
+                // Lógica Dinâmica de Orientação (DOM)
+                if (styleInputs.orientacao.value === 'landscape') {
+                    preview.documento.classList.remove('retrato');
+                    preview.documento.classList.add('paisagem');
+                } else {
+                    preview.documento.classList.remove('paisagem');
+                    preview.documento.classList.add('retrato');
+                }
+                
                 // Aplicar: Título
                 preview.titulo.style.fontSize = `${styleInputs.tituloTamanho.value}px`;
                 preview.titulo.style.fontWeight = styleInputs.tituloNegrito.checked ? 'bold' : 'normal';
@@ -287,7 +322,8 @@
                     filename:     `${nomeArquivo}.pdf`,
                     image:        { type: 'jpeg', quality: 0.98 },
                     html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    // A chave 'orientation' agora recebe a escolha do usuário dinamicamente
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: styleInputs.orientacao.value }
                 };
 
                 html2pdf().set(opcoesPDF).from(elemento).save().then(() => {
