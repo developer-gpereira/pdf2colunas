@@ -22,36 +22,51 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
+        /* O papel base, representando o tamanho físico A4 exato */
         .a4-paper {
-            width: 100%;
             background-color: white;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            padding: 10mm; 
             margin: 0 auto;
             color: #000;
+            position: relative; /* Para garantir o contexto do conteúdo interno */
+            overflow: hidden; /* Evita que o conteúdo passe do papel físico */
             box-sizing: border-box;
         }
 
-        /* Classes ajustadas matematicamente para evitar transbordo e página em branco (A4 útil = A4 total - margens) */
+        /* Orientação Retrato (Vertical) Exata: 210mm x 297mm */
         .retrato {
-            max-width: 200mm; /* A4(210mm) - 10mm (margens JS) */
-            min-height: 286mm; /* A4(297mm) - 10mm (margens JS) - 1mm (buffer de segurança) */
-            display: block; 
+            width: 210mm;
+            min-height: 297mm;
+        }
+        
+        /* Orientação Paisagem (Horizontal) Exata: 297mm x 210mm */
+        .paisagem {
+            width: 297mm;
+            min-height: 210mm;
         }
 
-        .paisagem {
-            max-width: 287mm; /* A4(297mm) - 10mm (margens JS) */
-            min-height: 199mm; /* A4(210mm) - 10mm (margens JS) - 1mm (buffer de segurança) */
+        /* Container interno que segura o conteúdo e aplica as margens reais. 
+           Assim, o html2pdf tira print do papel inteiro, mas o texto não toca a borda. */
+        .conteudo-interno {
+            padding: 15mm; /* Margem de impressão segura */
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: center; 
+            box-sizing: border-box;
+        }
+
+        /* Se for paisagem, centraliza o conteúdo verticalmente dentro do container interno */
+        .paisagem .conteudo-interno {
+            justify-content: center;
         }
 
         .letras-colunas {
             column-count: 2;
-            column-gap: 30px; 
+            column-gap: 40px; /* Mais espaço para garantir que as colunas não grudem */
             text-align: left;
             line-height: 1.5;
+            width: 100%; /* Garante que ocupe todo o espaço disponível das colunas */
         }
 
         .estrofe {
@@ -177,18 +192,24 @@
         </aside>
 
         <main class="w-full lg:w-2/3 bg-slate-100 p-4 lg:p-10 lg:overflow-y-auto flex justify-center">
+            
+            <!-- O Container Principal do A4 -->
             <div id="documento-pdf" class="a4-paper retrato transition-all duration-300">
-                <div class="text-center mb-6 pb-4 border-b-2 border-slate-200 w-full">
-                    <h1 id="preview-titulo" class="uppercase tracking-wide text-slate-900 mb-2">TÍTULO DO HINO</h1>
-                    <h3 id="preview-autor" class="text-slate-600">Nome do Cantor / Autor</h3>
-                </div>
-
-                <div id="preview-letra" class="letras-colunas">
-                    <div class="text-slate-400 italic text-center h-full flex flex-col justify-center items-center opacity-70" style="column-span: all; margin-top: 50px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mb-4"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
-                        <p>A letra formatada em duas colunas aparecerá aqui.</p>
+                
+                <!-- Novo Container Interno para gerenciar as margens reais -->
+                <div class="conteudo-interno">
+                    <div class="text-center mb-6 pb-4 border-b-2 border-slate-200 w-full">
+                        <h1 id="preview-titulo" class="uppercase tracking-wide text-slate-900 mb-2">TÍTULO DO HINO</h1>
+                        <h3 id="preview-autor" class="text-slate-600">Nome do Cantor / Autor</h3>
                     </div>
-                </div>
+
+                    <div id="preview-letra" class="letras-colunas">
+                        <div class="text-slate-400 italic text-center h-full flex flex-col justify-center items-center opacity-70" style="column-span: all; margin-top: 50px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mb-4"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                            <p>A letra formatada em duas colunas aparecerá aqui.</p>
+                        </div>
+                    </div>
+                </div> <!-- Fim do Container Interno -->
             </div>
         </main>
     </div>
@@ -300,17 +321,24 @@
                 btnBaixar.disabled = true;
                 btnBaixar.classList.add('opacity-75', 'cursor-not-allowed');
 
+                // Configuração revisada e mais segura
                 const opcoesPDF = {
-                    margin:       [5, 5, 5, 5], 
+                    margin:       0, // Margem ZERO no PDF, pois a margem já está no CSS (.conteudo-interno padding: 15mm)
                     filename:     `${nomeArquivo}.pdf`,
                     image:        { type: 'jpeg', quality: 0.98 },
                     html2canvas:  { 
                         scale: 2, 
                         useCORS: true, 
                         letterRendering: true,
-                        windowWidth: 1024 // Força a renderização com proporção de tela Desktop para evitar quebras em uso via mobile
+                        // windowWidth de Desktop garante que o layout não esprema no celular
+                        windowWidth: 1200 
                     }, 
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: styleInputs.orientacao.value }
+                    // Configura o jsPDF para usar o tamanho do elemento e respeitar a orientação
+                    jsPDF: { 
+                        unit: 'mm', 
+                        format: styleInputs.orientacao.value === 'portrait' ? 'a4' : [297, 210], // Força formato paisagem exato se necessário
+                        orientation: styleInputs.orientacao.value 
+                    }
                 };
 
                 html2pdf().set(opcoesPDF).from(elemento).save().then(() => {
