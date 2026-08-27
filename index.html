@@ -1,0 +1,240 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gerador de Letras de Hinos em PDF. Crie e formate letras de músicas em duas colunas rapidamente.">
+    <meta name="author" content="Guilherme">
+    
+    <title>Gerador de Letras - Hinos em PDF</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>">
+    
+    <!-- Tailwind CSS (via CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- html2pdf.js (via CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" xintegrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .a4-paper {
+            width: 100%;
+            max-width: 210mm;
+            min-height: 297mm;
+            background-color: white;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            /* Reduzido para 10mm para alinhar com as margens estreitas solicitadas */
+            padding: 10mm; 
+            margin: 0 auto;
+            color: #000;
+        }
+
+        .letras-colunas {
+            column-count: 2;
+            column-gap: 30px; /* Reduzido levemente para otimizar espaço */
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        .estrofe {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            margin-bottom: 1.25rem;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans h-screen flex flex-col overflow-hidden">
+
+    <header class="bg-white border-b border-slate-200 px-6 py-4 shadow-sm z-20 shrink-0">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">🎵</span>
+            <h1 class="text-xl font-bold text-slate-800">Gerador de Hinos PDF</h1>
+        </div>
+    </header>
+
+    <div class="flex flex-col lg:flex-row flex-grow overflow-hidden">
+        
+        <aside class="w-full lg:w-1/3 bg-white border-r border-slate-200 flex flex-col z-10 overflow-y-auto shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+            <div class="p-6 flex flex-col flex-grow">
+                
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">Conteúdo</h2>
+                
+                <div class="space-y-4 flex-grow flex flex-col">
+                    <div>
+                        <label for="titulo" class="block text-sm font-medium text-slate-700 mb-1">Título</label>
+                        <input type="text" id="titulo" placeholder="Ex: Grandioso És Tu" 
+                            class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+                    </div>
+
+                    <div>
+                        <label for="autor" class="block text-sm font-medium text-slate-700 mb-1">Autor / Cantor</label>
+                        <input type="text" id="autor" placeholder="Ex: Cantor Cristão" 
+                            class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+                    </div>
+
+                    <div class="flex flex-col flex-grow">
+                        <label for="letra" class="block text-sm font-medium text-slate-700 mb-1">Letra do Hino</label>
+                        <span class="text-xs text-slate-500 mb-2 block">Dica: Separe as estrofes com uma linha em branco.</span>
+                        <textarea id="letra" placeholder="Cole a letra do hino aqui..." 
+                            class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors resize-none flex-grow min-h-[200px]"></textarea>
+                    </div>
+                </div>
+
+                <hr class="my-6 border-slate-200">
+
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">Estilo Visual</h2>
+                
+                <div class="space-y-5 mb-6">
+                    <div>
+                        <label for="estilo-fonte" class="block text-sm font-medium text-slate-700 mb-1">Família da Fonte</label>
+                        <select id="estilo-fonte" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                            <option value="ui-sans-serif, system-ui, sans-serif">Sans-Serif (Moderna)</option>
+                            <option value="ui-serif, Georgia, 'Times New Roman', serif">Serif (Clássica)</option>
+                            <option value="ui-monospace, 'Courier New', monospace">Monospace (Máquina)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="tamanho-fonte" class="block text-sm font-medium text-slate-700 mb-1">Tamanho da Letra (px)</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <!-- Input alterado de Range para Number -->
+                            <input type="number" id="tamanho-fonte" min="10" max="30" value="14" 
+                                class="w-full border border-slate-300 rounded-md pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 font-semibold">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-slate-500 sm:text-sm">px</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <input type="checkbox" id="negrito-titulo" class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer" checked>
+                        <label for="negrito-titulo" class="ml-2 text-sm font-medium text-slate-700 cursor-pointer">Destacar Título (Negrito)</label>
+                    </div>
+                </div>
+
+                <button id="btn-baixar" class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold py-3 px-4 rounded-md shadow-sm flex justify-center items-center gap-2 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Gerar PDF
+                </button>
+            </div>
+        </aside>
+
+        <main class="w-full lg:w-2/3 bg-slate-100 p-6 lg:p-10 overflow-y-auto flex justify-center">
+            <div id="documento-pdf" class="a4-paper transition-all duration-300">
+                <div class="text-center mb-6 pb-4 border-b-2 border-slate-200">
+                    <h1 id="preview-titulo" class="text-2xl md:text-3xl font-bold uppercase tracking-wide text-slate-900 mb-2">TÍTULO DO HINO</h1>
+                    <h3 id="preview-autor" class="text-base md:text-lg text-slate-600 italic">Nome do Cantor / Autor</h3>
+                </div>
+
+                <div id="preview-letra" class="letras-colunas" style="font-size: 14px;">
+                    <div class="text-slate-400 italic text-center h-full flex flex-col justify-center items-center opacity-70" style="column-span: all; margin-top: 50px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mb-4"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                        <p>A letra formatada em duas colunas aparecerá aqui.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const formInputs = {
+                titulo: document.getElementById('titulo'),
+                autor: document.getElementById('autor'),
+                letra: document.getElementById('letra')
+            };
+
+            const styleInputs = {
+                fonte: document.getElementById('estilo-fonte'),
+                tamanho: document.getElementById('tamanho-fonte'),
+                negrito: document.getElementById('negrito-titulo')
+            };
+
+            const preview = {
+                titulo: document.getElementById('preview-titulo'),
+                autor: document.getElementById('preview-autor'),
+                letra: document.getElementById('preview-letra'),
+                documento: document.getElementById('documento-pdf')
+            };
+
+            const btnBaixar = document.getElementById('btn-baixar');
+
+            function atualizarVisao() {
+                preview.titulo.textContent = formInputs.titulo.value.trim() || 'TÍTULO DO HINO';
+                preview.autor.textContent = formInputs.autor.value.trim() || 'Nome do Cantor / Autor';
+
+                const textoLetra = formInputs.letra.value.trim();
+                if (textoLetra) {
+                    const estrofes = textoLetra.split(/\n\s*\n/);
+                    const htmlFormatado = estrofes.map(estrofe => {
+                        const linhas = estrofe.replace(/\n/g, '<br>');
+                        return `<div class="estrofe">${linhas}</div>`;
+                    }).join('');
+                    preview.letra.innerHTML = htmlFormatado;
+                } else {
+                    preview.letra.innerHTML = `<div class="text-slate-400 italic text-center opacity-70" style="column-span: all; margin-top: 50px;"><p>A letra formatada aparecerá aqui.</p></div>`;
+                }
+
+                preview.documento.style.fontFamily = styleInputs.fonte.value;
+                
+                // Valida o input de tamanho para evitar valores vazios que quebram o layout
+                const tamanhoFonteVal = parseInt(styleInputs.tamanho.value) || 14;
+                preview.letra.style.fontSize = `${tamanhoFonteVal}px`;
+                
+                if (styleInputs.negrito.checked) {
+                    preview.titulo.style.fontWeight = 'bold';
+                } else {
+                    preview.titulo.style.fontWeight = 'normal';
+                }
+            }
+
+            const todosOsInputs = [...Object.values(formInputs), ...Object.values(styleInputs)];
+
+            todosOsInputs.forEach(input => {
+                input.addEventListener('input', atualizarVisao);
+                input.addEventListener('change', atualizarVisao);
+            });
+
+            btnBaixar.addEventListener('click', () => {
+                const elemento = preview.documento;
+                const nomeBase = formInputs.titulo.value.trim() || 'hino';
+                const nomeArquivo = nomeBase.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '_').toLowerCase();
+
+                const conteudoOriginalBtn = btnBaixar.innerHTML;
+                btnBaixar.innerHTML = `Gerando...`;
+                btnBaixar.disabled = true;
+                btnBaixar.classList.add('opacity-75', 'cursor-not-allowed');
+
+                // Configuração atualizada com margens mais estreitas (5mm)
+                const opcoesPDF = {
+                    margin:       [5, 5, 5, 5], 
+                    filename:     `${nomeArquivo}.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                html2pdf().set(opcoesPDF).from(elemento).save().then(() => {
+                    btnBaixar.innerHTML = conteudoOriginalBtn;
+                    btnBaixar.disabled = false;
+                    btnBaixar.classList.remove('opacity-75', 'cursor-not-allowed');
+                }).catch(erro => {
+                    console.error('Falha na geração:', erro);
+                    alert('Erro ao gerar documento.');
+                    btnBaixar.innerHTML = conteudoOriginalBtn;
+                    btnBaixar.disabled = false;
+                    btnBaixar.classList.remove('opacity-75', 'cursor-not-allowed');
+                });
+            });
+            
+            atualizarVisao();
+        });
+    </script>
+</body>
+</html>
