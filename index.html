@@ -1,0 +1,93 @@
+
+<!-- ... existing code ... -->
+                <div class="flex flex-col flex-grow h-full">
+                    <label for="letra" class="block text-sm font-medium text-gray-700 mb-1">Letra (Separe as estrofes com linha em branco)</label>
+                    <textarea id="letra" rows="15" placeholder="Cole a letra do hino aqui..." 
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors resize-none flex-grow"></textarea>
+                </div>
+            </div>
+
+            <!-- NOVA SEÇÃO: Customização Visual -->
+            <div class="mt-6 border-t border-gray-200 pt-4 space-y-4">
+                <h3 class="text-lg font-semibold text-gray-800">Estilo Visual</h3>
+                
+                <div>
+                    <label for="estilo-fonte" class="block text-sm font-medium text-gray-700 mb-1">Família da Fonte</label>
+                    <select id="estilo-fonte" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="'Inter', ui-sans-serif, system-ui, sans-serif">Sans-Serif (Moderna)</option>
+                        <option value="'Times New Roman', Times, serif">Serif (Clássica)</option>
+                        <option value="'Courier New', Courier, monospace">Monospace (Máquina de escrever)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="tamanho-fonte" class="block text-sm font-medium text-gray-700 mb-1 flex justify-between">
+                        <span>Tamanho da Letra</span>
+                        <span id="tamanho-valor" class="text-blue-600 font-bold">14px</span>
+                    </label>
+                    <input type="range" id="tamanho-fonte" min="10" max="24" value="14" class="w-full cursor-pointer">
+                </div>
+                
+                <div>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="negrito-titulo" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4" checked>
+                        <span class="text-sm font-medium text-gray-700">Título em Negrito</span>
+                    </label>
+                </div>
+            </div>
+
+            <button id="btn-baixar" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md shadow flex justify-center items-center gap-2 transition-colors">
+<!-- ... existing code ... -->
+        const previewTitulo = document.getElementById('preview-titulo');
+        const previewAutor = document.getElementById('preview-autor');
+        const previewLetra = document.getElementById('preview-letra');
+        const btnBaixar = document.getElementById('btn-baixar');
+
+        // Mapeamento dos novos elementos de customização
+        const selectFonte = document.getElementById('estilo-fonte');
+        const inputTamanhoFonte = document.getElementById('tamanho-fonte');
+        const displayTamanhoValor = document.getElementById('tamanho-valor');
+        const checkNegritoTitulo = document.getElementById('negrito-titulo');
+        const documentoPdf = document.getElementById('documento-pdf');
+
+        // Função de atualização em tempo real
+        function atualizarPreview() {
+<!-- ... existing code ... -->
+                previewLetra.innerHTML = htmlFormatado;
+            } else {
+                previewLetra.innerHTML = '<p class="text-gray-400 italic text-center" style="column-span: all;">As letras aparecerão aqui em duas colunas...</p>';
+            }
+
+            // --- APLICAÇÃO DOS ESTILOS VISUAIS ---
+            // Altera a fonte de todo o documento PDF
+            documentoPdf.style.fontFamily = selectFonte.value;
+            
+            // Atualiza o tamanho apenas da letra e mostra no display
+            previewLetra.style.fontSize = `${inputTamanhoFonte.value}px`;
+            displayTamanhoValor.textContent = `${inputTamanhoFonte.value}px`;
+            
+            // Alterna a classe Tailwind de negrito para o título
+            if (checkNegritoTitulo.checked) {
+                previewTitulo.classList.add('font-bold');
+                previewTitulo.classList.remove('font-normal');
+            } else {
+                previewTitulo.classList.add('font-normal');
+                previewTitulo.classList.remove('font-bold');
+            }
+        }
+
+        // Adiciona Event Listeners para acionar a função sempre que o utilizador interagir
+        ['input', 'keyup', 'paste', 'change'].forEach(evento => {
+            inputTitulo.addEventListener(evento, atualizarPreview);
+            inputAutor.addEventListener(evento, atualizarPreview);
+            inputLetra.addEventListener(evento, atualizarPreview);
+            
+            // Listeners para os controlos de customização
+            selectFonte.addEventListener(evento, atualizarPreview);
+            inputTamanhoFonte.addEventListener(evento, atualizarPreview);
+            checkNegritoTitulo.addEventListener(evento, atualizarPreview);
+        });
+
+        // Lógica de Geração do PDF
+        btnBaixar.addEventListener('click', () => {
+<!-- 
